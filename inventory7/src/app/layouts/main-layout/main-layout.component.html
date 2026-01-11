@@ -1,0 +1,154 @@
+<div class="flex h-screen bg-gray-100 overflow-hidden">
+  <!-- Sidebar -->
+  <aside
+    [class.w-64]="sidebarOpen()"
+    [class.w-20]="!sidebarOpen()"
+    class="bg-gradient-to-b from-primary-800 to-primary-900 text-white transition-all duration-300 ease-in-out flex flex-col shadow-2xl"
+  >
+    <!-- Logo y Toggle -->
+    <div class="p-4 border-b border-primary-700 flex items-center justify-between">
+      @if (sidebarOpen()) {
+        <div class="flex items-center space-x-3">
+          <div class="h-10 w-10 bg-white rounded-lg flex items-center justify-center shadow-lg">
+            <i class="fas fa-box-open text-primary-600 text-xl"></i>
+          </div>
+          <div>
+            <p class="text-sm font-bold">Inventario</p>
+            <p class="text-xs text-primary-200">Sin Límite</p>
+          </div>
+        </div>
+      } @else {
+        <div class="mx-auto h-10 w-10 bg-white rounded-lg flex items-center justify-center shadow-lg">
+          <i class="fas fa-box-open text-primary-600 text-xl"></i>
+        </div>
+      }
+
+      <button
+        (click)="toggleSidebar()"
+        class="p-2 rounded-lg hover:bg-primary-700 transition-colors"
+      >
+        <i [class]="sidebarOpen() ? 'fas fa-chevron-left' : 'fas fa-chevron-right'"></i>
+      </button>
+    </div>
+
+    <!-- Menu Items -->
+    <nav class="flex-1 overflow-y-auto py-4 px-2">
+      @for (item of menuItems; track item.path) {
+        @if (isMenuItemVisible(item)) {
+          <a
+            [routerLink]="item.path"
+            routerLinkActive="bg-primary-600 shadow-lg"
+            [routerLinkActiveOptions]="{exact: false}"
+            class="flex items-center px-4 py-3 mb-1 rounded-lg hover:bg-primary-700 transition-all duration-200 group cursor-pointer"
+          >
+            <i [class]="'fas ' + item.icon + ' text-lg'"></i>
+
+            @if (sidebarOpen()) {
+              <span class="ml-4 font-medium">{{ item.label }}</span>
+
+              @if (item.badge && item.badge > 0) {
+                <span class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                  {{ item.badge }}
+                </span>
+              }
+            }
+          </a>
+        }
+      }
+    </nav>
+
+    <!-- User Section -->
+    <div class="border-t border-primary-700 p-4">
+      <div class="flex items-center space-x-3 mb-3">
+        <div class="h-10 w-10 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg flex-shrink-0">
+          {{ getUserInitials() }}
+        </div>
+
+        @if (sidebarOpen()) {
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold truncate">
+              {{ currentUser()?.profile?.name }} {{ currentUser()?.profile?.lastName }}
+            </p>
+            <p class="text-xs text-primary-200 truncate">
+              {{ currentUser()?.rol?.cargo }}
+            </p>
+          </div>
+        }
+      </div>
+
+      @if (sidebarOpen()) {
+        <button
+          (click)="logout()"
+          class="w-full flex items-center justify-center space-x-2 px-4 py-2 border border-primary-600 rounded-lg text-sm font-medium hover:bg-primary-700 transition-all"
+        >
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Cerrar Sesión</span>
+        </button>
+      } @else {
+        <button
+          (click)="logout()"
+          class="w-full flex items-center justify-center px-4 py-2 rounded-lg hover:bg-primary-700 transition-all"
+          title="Cerrar Sesión"
+        >
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      }
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Header -->
+    <header class="bg-white shadow-md px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <button
+          (click)="toggleSidebar()"
+          class="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+        >
+          <i class="fas fa-bars text-gray-600"></i>
+        </button>
+
+        <h1 class="text-xl font-bold text-gray-800">
+          Sistema de Gestión de Inventario
+        </h1>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <!-- Notificaciones -->
+        <button class="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
+          <i class="fas fa-bell text-gray-600 text-xl"></i>
+          @if (alertCount() > 0) {
+            <span class="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+              {{ alertCount() }}
+            </span>
+          }
+        </button>
+
+        <!-- Búsqueda rápida -->
+        <div class="relative hidden md:block">
+          <input
+            type="text"
+            placeholder="Buscar..."
+            class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 w-64"
+          />
+          <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="flex-1 overflow-y-auto bg-gray-50 p-6">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <!-- Loading Overlay -->
+  @if (loadingService.isLoading()) {
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-6 flex flex-col items-center space-y-4">
+        <div class="spinner"></div>
+        <p class="text-gray-600 font-medium">Cargando...</p>
+      </div>
+    </div>
+  }
+</div>
